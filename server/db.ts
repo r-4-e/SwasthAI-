@@ -69,6 +69,17 @@ db.exec(`
     weight REAL NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS nutrition_database (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    calories_per_100g INTEGER NOT NULL,
+    protein_per_100g REAL NOT NULL,
+    carbs_per_100g REAL NOT NULL,
+    fat_per_100g REAL NOT NULL,
+    fiber_per_100g REAL DEFAULT 0,
+    category TEXT -- e.g., 'Breads', 'Curries', 'Snacks'
+  );
 `);
 
 export default db;

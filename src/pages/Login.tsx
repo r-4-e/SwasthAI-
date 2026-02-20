@@ -41,7 +41,12 @@ export default function Login() {
       });
       if (error) throw error;
     } catch (err: any) {
-      setError(err.message);
+      console.error("Google Login Error:", err);
+      if (err.message?.includes('redirect_uri_mismatch')) {
+        setError('Configuration Error: Please add this URL to your Supabase Google Provider Redirect URIs.');
+      } else {
+        setError(err.message || 'Failed to connect with Google. Please try again.');
+      }
     }
   };
 

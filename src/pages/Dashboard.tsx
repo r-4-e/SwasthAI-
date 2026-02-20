@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import BottomNav from '../components/BottomNav';
-import { Plus, Droplets, Flame, Utensils, ChevronRight } from 'lucide-react';
+import { Plus, Droplets, Flame, Utensils, LogOut } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -27,7 +27,7 @@ const ProgressBar = ({ value, max, color, label }: { value: number, max: number,
 };
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const date = new Date().toISOString().split('T')[0];
@@ -78,8 +78,13 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-gray-900">Hello, {userName.split(' ')[0]}!</h1>
             <p className="text-gray-500 text-sm">Let's hit your goals today.</p>
           </div>
-          <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-            {userName[0].toUpperCase()}
+          <div className="flex items-center gap-3">
+            <button onClick={logout} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+              <LogOut size={20} />
+            </button>
+            <Link to="/profile" className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold hover:bg-primary/20 transition-colors">
+              {userName[0].toUpperCase()}
+            </Link>
           </div>
         </div>
 
@@ -144,12 +149,12 @@ export default function Dashboard() {
             </div>
             <span className="font-semibold text-gray-700">Scan Meal</span>
           </Link>
-          <button className="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+          <Link to="/water" className="bg-white p-4 rounded-2xl shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
             <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
               <Plus size={24} />
             </div>
             <span className="font-semibold text-gray-700">Add Water</span>
-          </button>
+          </Link>
         </section>
 
         {/* Weight Trend */}

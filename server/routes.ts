@@ -143,7 +143,7 @@ router.post('/water', requireAuth, (req: any, res: any) => {
 // --- Gemini Vision API ---
 
 router.post('/analyze-meal', requireAuth, async (req: any, res: any) => {
-  const { imageBase64 } = req.body;
+  const { imageBase64, mode } = req.body;
 
   if (!imageBase64) {
     return res.status(400).json({ error: 'Image required' });
@@ -152,24 +152,36 @@ router.post('/analyze-meal', requireAuth, async (req: any, res: any) => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
+    const context = mode === 'plate' 
+      ? "This image contains a full plate of food with potentially multiple items." 
+      : "This image contains a single food item or snack.";
+
     const prompt = `
-      Analyze this image of food. Identify the items present.
-      For each item, estimate the weight in grams and provide nutritional information per 100g (calories, protein, carbs, fat).
-      Also provide a confidence score (0-1).
-      Return ONLY a JSON object with this structure:
+      Analyze this food image. ${context}
+      Identify all distinct food items.
+      Focus on identifying specific Indian dishes if present (e.g., "Dal Makhani" instead of "Lentil Soup", "Aloo Paratha" instead of "Stuffed Bread").
+      
+      For each item:
+      1. Name: A concise, common name.
+      2. Estimated Grams: Your best estimate of the weight in grams based on visual portion size.
+      3. Nutritional Info per 100g: Calories, Protein (g), Carbs (g), Fat (g).
+      4. Confidence: A score from 0.0 to 1.0 indicating how sure you are.
+
+      Return ONLY a valid JSON object with this exact structure:
       {
         "items": [
           {
-            "name": "Food Name",
-            "estimated_grams": 150,
-            "calories_per_100g": 120,
-            "protein_per_100g": 10,
-            "carbs_per_100g": 20,
-            "fat_per_100g": 5,
-            "confidence": 0.95
+            "name": "string",
+            "estimated_grams": number,
+            "calories_per_100g": number,
+            "protein_per_100g": number,
+            "carbs_per_100g": number,
+            "fat_per_100g": number,
+            "confidence": number
           }
         ]
       }
+      Do not include markdown formatting like \`\`\`json. Just the raw JSON string.
     `;
 
     // Remove data:image/jpeg;base64, prefix if present
@@ -197,7 +209,36 @@ router.post('/analyze-meal', requireAuth, async (req: any, res: any) => {
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
     const data = JSON.parse(text);
-    res.json(data);
+
+    // Enhance with local database
+    const enhancedItems = data.items.map((item: any) => {
+      // Simple fuzzy match: check if DB name is contained in AI name or vice versa
+      // In a real app, use a proper fuzzy search library
+      const stmt = db.prepare(`
+        SELECT * FROM nutrition_database 
+        WHERE name LIKE ? OR ? LIKE '%' || name || '%'
+        ORDER BY length(name) DESC 
+        LIMIT 1
+      `);
+      
+      const dbItem = stmt.get(`%${item.name}%`, item.name) as any;
+
+      if (dbItem) {
+        // Use DB macros but keep AI's weight estimate
+        return {
+          ...item,
+          name: dbItem.name, // Normalize name
+          calories_per_100g: dbItem.calories_per_100g,
+          protein_per_100g: dbItem.protein_per_100g,
+          carbs_per_100g: dbItem.carbs_per_100g,
+          fat_per_100g: dbItem.fat_per_100g,
+          source: 'verified_db' // Flag to show user it's verified
+        };
+      }
+      return { ...item, source: 'ai_estimate' };
+    });
+
+    res.json({ items: enhancedItems });
   } catch (error) {
     console.error('Gemini API Error:', error);
     res.status(500).json({ error: 'Failed to analyze image' });

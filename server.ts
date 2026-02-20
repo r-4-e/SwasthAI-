@@ -5,8 +5,12 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './server/auth';
 import apiRoutes from './server/routes';
 import { supabase } from './server/supabase';
+import { seedNutritionDatabase } from './server/seed_nutrition';
 
 async function startServer() {
+  // Seed Database
+  seedNutritionDatabase();
+
   const app = express();
   const PORT = 3000;
 
