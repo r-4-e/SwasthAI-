@@ -7,7 +7,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase environment variables on server.');
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
-);
+// Only create client if URL is valid
+export const supabase = (supabaseUrl && supabaseUrl !== "YOUR_SUPABASE_URL")
+  ? createClient(supabaseUrl, supabaseAnonKey!)
+  : {
+      auth: {
+        getUser: async () => ({ data: { user: null }, error: new Error('Supabase not configured') }),
+      }
+    } as any;
