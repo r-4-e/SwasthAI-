@@ -1,0 +1,5 @@
+{
+  "name": "SwasthAI",
+  "description": "Indian-first, AI-assisted nutrition tracking platform.",
+  "requestFramePermissions": ["camera"]
+}
