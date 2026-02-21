@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import clsx from 'clsx';
@@ -114,9 +115,15 @@ export default function Onboarding() {
 
   const handleSubmit = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const res = await fetch('/api/profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           ...formData,
           ...results,
@@ -124,9 +131,17 @@ export default function Onboarding() {
         }),
       });
 
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("Failed to parse response:", text);
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to save profile');
+        throw new Error(data.error || 'Failed to save profile');
       }
       
       await checkProfile(); // Update context to know profile exists
