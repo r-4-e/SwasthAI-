@@ -76,9 +76,14 @@ export default function Login() {
           {/* Configuration Helper */}
           <div className="p-4 bg-blue-50 rounded-xl text-xs text-blue-800 border border-blue-100">
             <p className="font-bold mb-2">⚠️ Setup Required for Google Sign-In:</p>
-            <p className="mb-2">To prevent "Localhost refused to connect" errors, add this URL to your Supabase Dashboard &gt; Authentication &gt; URL Configuration &gt; Redirect URLs:</p>
+            <p className="mb-2">To fix "Localhost refused to connect":</p>
+            <ol className="list-decimal pl-4 space-y-1 mb-2">
+              <li>Go to Supabase &gt; Authentication &gt; URL Configuration.</li>
+              <li><strong>CRITICAL:</strong> Change "Site URL" to the URL below.</li>
+              <li>Also add it to "Redirect URLs".</li>
+            </ol>
             <div className="bg-white p-2 rounded border border-blue-200 font-mono break-all select-all">
-              {window.location.origin}/dashboard
+              {window.location.origin}
             </div>
           </div>
 

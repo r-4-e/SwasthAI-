@@ -114,7 +114,7 @@ export default function Onboarding() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/auth/profile', {
+      const res = await fetch('/api/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -124,13 +124,16 @@ export default function Onboarding() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to save profile');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
       
       await checkProfile(); // Update context to know profile exists
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Something went wrong. Please try again.');
+      alert(error.message || 'Something went wrong. Please try again.');
     }
   };
 
