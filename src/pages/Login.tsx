@@ -73,6 +73,15 @@ export default function Login() {
             Continue with Google
           </button>
 
+          {/* Configuration Helper */}
+          <div className="p-4 bg-blue-50 rounded-xl text-xs text-blue-800 border border-blue-100">
+            <p className="font-bold mb-2">⚠️ Setup Required for Google Sign-In:</p>
+            <p className="mb-2">To prevent "Localhost refused to connect" errors, add this URL to your Supabase Dashboard &gt; Authentication &gt; URL Configuration &gt; Redirect URLs:</p>
+            <div className="bg-white p-2 rounded border border-blue-200 font-mono break-all select-all">
+              {window.location.origin}/dashboard
+            </div>
+          </div>
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
