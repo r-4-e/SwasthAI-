@@ -43,7 +43,7 @@ export default function Login() {
     } catch (err: any) {
       console.error("Google Login Error:", err);
       if (err.message?.includes('redirect_uri_mismatch')) {
-        setError('Configuration Error: Please add this URL to your Supabase Google Provider Redirect URIs.');
+        setError(`Configuration Error: Please add this URL to your Supabase Google Provider Redirect URIs: ${window.location.origin}/dashboard`);
       } else {
         setError(err.message || 'Failed to connect with Google. Please try again.');
       }

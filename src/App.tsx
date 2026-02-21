@@ -14,12 +14,25 @@ import WaterLog from './pages/WaterLog';
 import Profile from './pages/Profile';
 import React from 'react';
 
-function PrivateRoute({ children }: { children: React.ReactElement }) {
-  const { user, isLoading } = useAuth();
+function PrivateRoute({ children, requireProfile = true }: { children: React.ReactElement, requireProfile?: boolean }) {
+  const { user, isLoading, hasProfile } = useAuth();
   
   if (isLoading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
   
-  return user ? children : <Navigate to="/login" />;
+  if (!user) return <Navigate to="/login" />;
+
+  // If profile is required but missing, redirect to onboarding
+  // We check hasProfile !== null to ensure we've actually checked
+  if (requireProfile && hasProfile === false) {
+    return <Navigate to="/onboarding" />;
+  }
+
+  // If we are on onboarding but already have a profile, go to dashboard
+  if (!requireProfile && hasProfile === true) {
+    return <Navigate to="/dashboard" />;
+  }
+  
+  return children;
 }
 
 export default function App() {
@@ -29,7 +42,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
+          <Route path="/onboarding" element={<PrivateRoute requireProfile={false}><Onboarding /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/scan-meal" element={<PrivateRoute><ScanMeal /></PrivateRoute>} />
           <Route path="/water" element={<PrivateRoute><WaterLog /></PrivateRoute>} />

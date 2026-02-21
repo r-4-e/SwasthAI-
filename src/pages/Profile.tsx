@@ -23,14 +23,20 @@ export default function Profile() {
 
       <div className="px-6 space-y-4">
         <section className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+          <div 
+            onClick={() => window.location.href = '/onboarding'}
+            className="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+          >
             <div className="flex items-center gap-3">
               <div className="bg-gray-100 p-2 rounded-lg"><UserIcon size={20} className="text-gray-600" /></div>
               <span className="font-medium text-gray-900">Personal Details</span>
             </div>
             <ChevronRight size={20} className="text-gray-400" />
           </div>
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+          <div 
+            onClick={() => alert('App Settings coming soon!')}
+            className="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+          >
             <div className="flex items-center gap-3">
               <div className="bg-gray-100 p-2 rounded-lg"><Settings size={20} className="text-gray-600" /></div>
               <span className="font-medium text-gray-900">App Settings</span>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { checkProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     age: '',
@@ -78,6 +80,33 @@ export default function Onboarding() {
   };
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.age) {
+            setFormData(prev => ({
+              ...prev,
+              age: data.age || '',
+              gender: data.gender || 'male',
+              height: data.height || '',
+              current_weight: data.current_weight || '',
+              goal_type: data.goal_type || 'lose',
+              goal_weight: data.goal_weight || '',
+              activity_level: data.activity_level || 'sedentary',
+              target_date: data.target_date || '',
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
     if (step === 3) {
       calculatePlan();
     }
@@ -97,6 +126,7 @@ export default function Onboarding() {
 
       if (!res.ok) throw new Error('Failed to save profile');
       
+      await checkProfile(); // Update context to know profile exists
       navigate('/dashboard');
     } catch (error) {
       console.error(error);
