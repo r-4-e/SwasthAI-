@@ -4,9 +4,17 @@ import { GoogleGenAI } from "@google/genai";
 
 const router = express.Router();
 
+// Log when routes are initialized
+console.log('Initializing API routes...');
+
+router.get('/ping', (req, res) => {
+  res.json({ message: 'pong', user: req.user });
+});
+
 // Middleware to check auth
 const requireAuth = (req: any, res: any, next: any) => {
   if (!req.user) {
+    console.log('Unauthorized access attempt');
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
@@ -15,6 +23,7 @@ const requireAuth = (req: any, res: any, next: any) => {
 // --- Profile Routes ---
 
 router.post('/profile', requireAuth, (req: any, res: any) => {
+  console.log('POST /profile called');
   const {
     age, gender, height, current_weight, goal_type, goal_weight,
     target_date, activity_level, daily_calories, protein_target,
@@ -57,7 +66,9 @@ router.get('/profile', requireAuth, (req: any, res: any) => {
   }
 });
 
-// --- Dashboard Routes ---
+// ... rest of the routes ...
+
+export const apiRouter = router;
 
 router.get('/dashboard/:date', requireAuth, (req: any, res: any) => {
   const { date } = req.params;
@@ -245,4 +256,4 @@ router.post('/analyze-meal', requireAuth, async (req: any, res: any) => {
   }
 });
 
-export default router;
+export const apiRouter = router;
