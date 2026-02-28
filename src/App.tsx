@@ -23,9 +23,9 @@ function PrivateRoute({ children, requireProfile = true }: { children: React.Rea
 
   // If profile is required but missing, redirect to onboarding
   // We check hasProfile !== null to ensure we've actually checked
-  if (requireProfile && hasProfile === false) {
-    return <Navigate to="/onboarding" />;
-  }
+  // if (requireProfile && hasProfile === false) {
+  //   return <Navigate to="/onboarding" />;
+  // }
 
   // If we are on onboarding but already have a profile, go to dashboard
   if (!requireProfile && hasProfile === true) {

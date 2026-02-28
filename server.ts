@@ -42,6 +42,58 @@ async function startServer() {
 
   // API Routes
   app.use('/api/auth', authRoutes);
+  
+  // Explicitly handle /api/profile here to debug 404
+  app.post('/api/profile', async (req: any, res: any) => {
+    console.log('Direct POST /api/profile handler called');
+    
+    // Auth check
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error || !user) return res.status(401).json({ error: 'Unauthorized' });
+      req.user = user;
+    } catch (err) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const {
+      age, gender, height, current_weight, goal_type, goal_weight,
+      target_date, activity_level, daily_calories, protein_target,
+      carbs_target, fat_target, water_target, preferred_language
+    } = req.body;
+
+    try {
+      // Import db dynamically to avoid circular dependency issues if any
+      const db = (await import('./server/db')).default;
+      
+      const stmt = db.prepare(`
+        INSERT OR REPLACE INTO user_profiles (
+          user_id, age, gender, height, current_weight, goal_type, goal_weight,
+          target_date, activity_level, daily_calories, protein_target,
+          carbs_target, fat_target, water_target, preferred_language
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      stmt.run(
+        req.user.id, age, gender, height, current_weight, goal_type, goal_weight,
+        target_date, activity_level, daily_calories, protein_target,
+        carbs_target, fat_target, water_target, preferred_language
+      );
+
+      // Initial weight log
+      const weightStmt = db.prepare('INSERT INTO weight_logs (user_id, date, weight) VALUES (?, ?, ?)');
+      weightStmt.run(req.user.id, new Date().toISOString().split('T')[0], current_weight);
+
+      res.json({ message: 'Profile updated' });
+    } catch (error) {
+      console.error('Profile save error:', error);
+      res.status(500).json({ error: 'Failed to save profile' });
+    }
+  });
+
   app.use('/api', apiRouter);
 
   app.get('/api/health', (req, res) => {

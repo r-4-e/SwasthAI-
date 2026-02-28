@@ -7,7 +7,7 @@ const router = express.Router();
 // Log when routes are initialized
 console.log('Initializing API routes...');
 
-router.get('/ping', (req, res) => {
+router.get('/ping', (req: any, res: any) => {
   res.json({ message: 'pong', user: req.user });
 });
 
@@ -67,8 +67,6 @@ router.get('/profile', requireAuth, (req: any, res: any) => {
 });
 
 // ... rest of the routes ...
-
-export const apiRouter = router;
 
 router.get('/dashboard/:date', requireAuth, (req: any, res: any) => {
   const { date } = req.params;
